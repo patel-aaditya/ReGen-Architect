@@ -1,0 +1,7 @@
+{
+  "name": "ReGen: Urban Ecosystem Architect",
+  "description": "A high-fidelity AI orchestrator that transforms urban decay into sustainable ecosystems. It analyzes site conditions, visualizes ecological restoration using Gemini 3 Pro Image, and generates detailed, autonomous execution plans for implementation.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
