@@ -1,7 +1,14 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { SiteAnalysis, RestorationPlan, RestorationType, Coordinates, LocalSearchResult, BudgetLevel } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to initialize AI only when needed, preventing crash on load if key is missing
+const getAI = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please check your environment variables.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 // --- Retry Logic ---
 
@@ -112,6 +119,7 @@ const servicesSchema: Schema = {
 export const analyzeSiteImage = async (base64Image: string, location: Coordinates | null): Promise<SiteAnalysis> => {
   return retryOperation(async () => {
     try {
+      const ai = getAI();
       const locationContext = location 
         ? `Location Coordinates: Lat ${location.latitude}, Lng ${location.longitude}. Use this to infer strict local climate data (e.g. India, UK, USA), native plant species availability, and rainfall patterns.` 
         : "Location not provided. Infer climate from visual cues.";
@@ -160,6 +168,7 @@ export const analyzeSiteImage = async (base64Image: string, location: Coordinate
 
 export const generateVisionImage = async (originalBase64: string, type: RestorationType, analysis: SiteAnalysis, budget: BudgetLevel): Promise<string> => {
   return retryOperation(async () => {
+    const ai = getAI();
     const budgetPrompt = budget === BudgetLevel.LOW 
       ? "Use cost-effective materials, gravel paths, young plants, and DIY aesthetics." 
       : budget === BudgetLevel.HIGH 
@@ -228,6 +237,7 @@ export const createExecutionPlan = async (
 ): Promise<RestorationPlan> => {
   return retryOperation(async () => {
     try {
+      const ai = getAI();
       const locationContext = location 
         ? `Location Coordinates: ${location.latitude}, ${location.longitude}. DETECT THE COUNTRY. Use the LOCAL CURRENCY (e.g., ₹ for India, £ for UK, € for Europe) for all cost estimates.` 
         : `Detect country from image cues and use local currency for costs.`;
@@ -279,6 +289,7 @@ export const createExecutionPlan = async (
 export const findLocalServices = async (query: string, location: Coordinates): Promise<LocalSearchResult> => {
   return retryOperation(async () => {
     try {
+      const ai = getAI();
       // Use gemini-3-flash-preview with googleSearch and JSON schema to get structured data
       // This is better for "Calling" than the Maps tool which returns unformatted grounding chunks
       const response = await ai.models.generateContent({
