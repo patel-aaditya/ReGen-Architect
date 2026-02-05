@@ -1,11 +1,41 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { SiteAnalysis, RestorationPlan, RestorationType, Coordinates, LocalSearchResult, BudgetLevel } from "../types";
 
-// Helper to initialize AI only when needed, preventing crash on load if key is missing
+// --- Safe API Key Retrieval ---
+// This handles both Vite (import.meta.env) and standard Node/CRA (process.env) environments
+const getApiKey = (): string | undefined => {
+  // 1. Try Vite standard (VITE_ prefix required)
+  try {
+    // @ts-ignore
+    if (import.meta && import.meta.env && import.meta.env.VITE_API_KEY) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+  } catch (e) {
+    // ignore syntax errors in non-module environments
+  }
+
+  // 2. Try standard process.env (Vercel automatic env vars, CRA, etc.)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      // Check for simple API_KEY
+      if (process.env.API_KEY) return process.env.API_KEY;
+      // Check for REACT_APP_API_KEY (CRA standard)
+      if (process.env.REACT_APP_API_KEY) return process.env.REACT_APP_API_KEY;
+    }
+  } catch (e) {
+    // ignore ReferenceError if process is not defined
+  }
+  
+  return undefined;
+};
+
+// Helper to initialize AI only when needed
 const getAI = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("API Key is missing. Please check your environment variables.");
+    console.error("Gemini API Key is missing. Checked: import.meta.env.VITE_API_KEY, process.env.API_KEY");
+    throw new Error("API Key is missing. If using Vite/Vercel, please add 'VITE_API_KEY' to your environment variables.");
   }
   return new GoogleGenAI({ apiKey });
 };
