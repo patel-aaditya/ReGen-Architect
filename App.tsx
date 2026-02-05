@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { AppState, ProjectState, RestorationType, Coordinates, BudgetLevel } from './types';
 import { analyzeSiteImage, generateVisionImage, createExecutionPlan } from './services/geminiService';
-import { UploadIcon, LeafIcon, SparklesIcon, ChartIcon, MapPinIcon } from './components/Icons';
+import { UploadIcon, LeafIcon, SparklesIcon, ChartIcon, MapPinIcon, InfoIcon } from './components/Icons';
 import AnalysisView from './components/AnalysisView';
 import PlanView from './components/PlanView';
 
@@ -20,6 +20,7 @@ const App = () => {
   });
   const [isLocating, setIsLocating] = useState(false);
   const [loadingDemo, setLoadingDemo] = useState(false);
+  const [showTechStack, setShowTechStack] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -145,7 +146,7 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen pb-12 relative overflow-x-hidden font-sans text-slate-200">
+    <div className="min-h-screen pb-12 relative overflow-x-hidden font-sans text-slate-200 flex flex-col">
         {/* Background Gradients */}
         <div className="fixed inset-0 pointer-events-none z-[-1]">
             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-900/20 rounded-full blur-[120px]"></div>
@@ -164,14 +165,15 @@ const App = () => {
                      New Project
                  </button>
              )}
-             <a href="https://github.com/google/genai" target="_blank" rel="noreferrer" className="hidden md:block text-xs text-slate-500 hover:text-emerald-400">
-                Powered by Gemini API
-             </a>
+             <span className="hidden md:flex items-center gap-2 text-xs text-slate-500 bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800">
+                <SparklesIcon className="w-3 h-3 text-emerald-500" />
+                Powered by Gemini 3 Flash & 2.5 Image
+             </span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-24">
+      <main className="max-w-7xl mx-auto px-6 pt-24 flex-grow w-full">
         
         {/* State: IDLE - Landing & Upload Area */}
         {appState === AppState.IDLE && (
@@ -376,6 +378,94 @@ const App = () => {
             </div>
         )}
       </main>
+
+      {/* Tech Stack Modal */}
+      {showTechStack && (
+        <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn" 
+            onClick={() => setShowTechStack(false)}
+        >
+            <div 
+                className="bg-slate-900 border border-slate-700 p-6 md:p-8 rounded-2xl max-w-2xl w-full shadow-2xl relative overflow-y-auto max-h-[90vh]" 
+                onClick={e => e.stopPropagation()}
+            >
+                <button onClick={() => setShowTechStack(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <span className="text-emerald-400">ReGen</span> System Architecture
+                </h2>
+
+                <div className="space-y-6">
+                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                             <ChartIcon className="w-5 h-5 text-blue-400" />
+                             1. Ecological Analysis
+                        </h3>
+                        <p className="text-slate-400 text-sm mb-2">
+                            Uses <span className="text-blue-300 font-mono">gemini-3-flash-preview</span> with Vision to analyze soil sealing, sunlight patterns, and biodiversity deficits from a single photo.
+                        </p>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                             <SparklesIcon className="w-5 h-5 text-purple-400" />
+                             2. Generative Visualization
+                        </h3>
+                        <p className="text-slate-400 text-sm mb-2">
+                            Uses <span className="text-purple-300 font-mono">gemini-2.5-flash-image</span> to generate photorealistic future-state renders, preserving original perspective and scale.
+                        </p>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                             <MapPinIcon className="w-5 h-5 text-emerald-400" />
+                             3. Execution & Sourcing
+                        </h3>
+                        <p className="text-slate-400 text-sm mb-2">
+                            Uses <span className="text-emerald-300 font-mono">gemini-3-flash-preview</span> with <span className="font-mono bg-slate-900 px-1 rounded">Thinking Budget: 4096</span> to generate phased construction plans.
+                        </p>
+                        <p className="text-slate-400 text-sm">
+                            Integrates <strong>Google Search Grounding</strong> to find real local contractors and nurseries based on the user's geolocation.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center text-sm text-slate-500">
+                    <p>Built for the Google Gemini API Hackathon</p>
+                    <a 
+                        href="https://github.com/google/genai" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:underline"
+                    >
+                        View Gemini Docs
+                    </a>
+                </div>
+            </div>
+        </div>
+      )}
+
+      <footer className="w-full max-w-7xl mx-auto px-6 py-8 mt-auto border-t border-slate-800/50 flex flex-col md:flex-row justify-between items-center text-slate-500 text-sm">
+        <div>
+          <span className="font-semibold text-slate-400">ReGen</span> • AI Urban Architect
+        </div>
+        <div className="mt-4 md:mt-0 flex gap-6 items-center">
+            <button 
+                onClick={() => setShowTechStack(true)}
+                className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
+            >
+                <InfoIcon className="w-4 h-4" />
+                System Architecture
+            </button>
+            <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                GitHub Repo
+            </a>
+        </div>
+      </footer>
     </div>
   );
 };
